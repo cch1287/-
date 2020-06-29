@@ -1,0 +1,10 @@
+进行数据清洗前，先要了解数据集中数据的完整性情况：检查各列的缺失值情况
+#为了不破坏phone_data中的数据，我们将phone_data浅拷贝赋值给data
+data=copy.copy(phone_data)
+#然后对data进行缺失值检查，可以使用isnull().sum()获取data中各列缺失值的总数，以此了解缺失值情况
+pd.isnull(data).sum()
+#使用fillna()方法用0补全缺失值
+data=data.fillna(0)
+#再次检查缺失值补全情况，查看是否有遗漏
+#若操作正确，所有列的缺失值总数应该都为0，即表明没有缺失值了
+pd.isnull(data).sum()
