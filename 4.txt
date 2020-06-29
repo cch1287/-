@@ -1,0 +1,84 @@
+#构建列表no，其元素为所有的数值数据列名
+no=['RAM','ROM','battery','comments','price','rear camera','resolution','screen size','weight']
+#编写data_process(data, no_process)函数：遍历data中所有非数值数据列，按照转换规则进行转换
+#其中，no_process中包含数值数据列信息
+def data_process(data,no_process):
+    for i in data.columns:
+        k=0
+        dic={}
+        res=[]
+        if i not in no_process:
+            for j in data[i]:
+                if j not in dic.keys():
+                    dic[j]=k
+                    k+=1
+                res.append(dic[j])
+            data[i]=res
+
+            
+#调用data_proces函数，在给定数据集data中将不属于no_process元素的非数值数据列数据转换为数值数据
+data_process(data,no)
+data.describe
+——————————————
+2.使用数据可视化技术考察RAM和销量间的关联性
+#使用sns绘制RAM与销量之间的柱形图
+sns.barplot(x='RAM',y='comments',data=data,ci=None)
+————————————————
+3.使用数据可视化技术考察ROM和销量间的关联性
+#使用sns绘制ROM与销量之间的柱形图
+sns.barplot(x='ROM',y='comments',data=data,ci=None)
+————————————————————————
+4.使用数据可视化技术考察battery和销量间的关联性
+#使用sns绘制battery与销量之间的柱形图
+sns.barplot(x='battery',y='comments',data=data,ci=None)
+————————————————
+分箱
+#设定RAM的分箱尺度，调用pd.cut()将分箱处理得到的数据添加到data的‘RAM_cut’列中
+bins=[-1,1,4,6,8,11]
+data['RAM_cut']=pd.cut(data['RAM'],bins,labels=[0,1,2,3,4])
+#设定ROM的分箱尺度，调用pd.cut()将分箱处理得到的数据添加到data的‘ROM_cut’列中
+bins=[-1,16,32,128,256,513]
+data['ROM_cut']=pd.cut(data['ROM'],bins,labels=[0,1,2,3,4])
+#设定battery的分箱尺度，调用pd.cut()将分箱处理得到的数据添加到data的‘battery_cut’列中
+bins=[-1,1000,2000,3000,4000,5000,6000]
+data['battery_cut']=pd.cut(data['battery'],bins,labels=[0,1,2,3,4,5])
+——————————————————
+准备训练数据
+#提取训练数据train_data：data中除后200项数据之外的其他数据，注意需去掉评论数'comments'这列数据
+train_data=data.drop('comments',axis=1)[:-200]
+
+#提取训练结果数据train_target：从data中提取评论数'comments'这列数据，注意不包含最后200项数据
+train_target=data['comments'][:-200]
+
+
+#将train_data、train_target转换成numpy数组，数据类型设置为'float64'
+train_data=np.array(train_data,dtype='float64')
+train_target=np.array(train_target,dtype='float64')
+——————————————————
+评估模型数据
+#提取评估数据valid_data：选取data中后200项数据，注意需去掉评论数'comments'这列数据
+valid_data=data.drop('comments',axis=1)[-200:]
+
+#提取评估结果数据valid_target：从data中提取评论数'comments'这列后200项数据
+valid_target=data['comments'][-200:]
+——————————————————
+构造随机森林模型并训练
+#调用RandomForestRegressor()函数构建随机森林模型forest
+forest=RandomForestRegressor()
+#构建字典para，为key值'n_estimators'设置对应的value（列表类型），
+para={'n_estimators':[80,100,120,150,180,240,360,500],
+     'max_depth':[6,7,8,9,10,11]}
+
+#使用GridSearchCV()网络搜索函数调用随机森林模型forest构建手机销量预测模型，将para设为param_grid网格数据
+grid=GridSearchCV(forest,param_grid=para,cv=3)
+
+#对手机销量预测模型grid使用fit()方法进行训练
+grid.fit(train_data,train_target)
+————————————
+获取预测结果
+#使用predict()方法获取grid的预测结果，放入predict中
+predict=grid.predict(valid_data)
+#使用metrics的mean_squared_log_error()计算predict和valid_target的均方对数误差值
+metrics.mean_squared_log_error(predict,valid_target)
+#查看模型grid的最佳参数
+grid.best_params_
