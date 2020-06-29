@@ -1,0 +1,23 @@
+1.导入numpy, pandas, matplotlib.pyplot, seaborn库，并分别将其命名为np,pd,plt,sns
+2.导入copy库
+3.从sklearn.model_selection库中导入GridSearchCV函数
+4.从sklearn库中导入metrics函数
+5.从sklearn.ensemble库中导入RandomForestRegressor函数
+——————————————————
+#按要求导入几个库
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sns
+import copy
+from sklearn.model_selection import GridSearchCV
+from sklearn import metrics
+from sklearn.ensemble import RandomForestRegressor
+——————————————————
+1.使用pd.read_csv函数将数据集读取到phone_data中：数据集相对目录：/data/shixunfiles/4e8c7513a833bbb84561d227eb6f7588_1592216699328.csv
+2.重新设置索引（index）：DataFrame存储为csv file后原来的索引（列名：‘Unnamed: 0’）会变为一个普通列（不再具备索引功能），因此需要将其重新设置为索引。可以使用set_index方法进行设置
+#读取数据集到phone_data中
+phone_data=pd.read_csv("/data/shixunfiles/4e8c7513a833bbb84561d227eb6f7588_1592216699328.csv")
+#将第一列'Unnamed: 0'重新设置为索引
+phone_data.set_index('Unnamed: 0',append=True)
+
