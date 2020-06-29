@@ -1,0 +1,61 @@
+1.1 手机的销量数据是手机营销最关注的信息之一，这里要求按照品牌对数据进行分类，然后聚合处理求取各个品牌的手机销量，并按照销量进行降序排列
+因为phone_data存放的数据中没有销量数据，所以我们选取与销量有密切关联性的评论数当作销量进行处理，计算各个品牌手机的销量占比，并绘制图像展示占比结果
+
+注意：因为刚才进行了缺失值补全，补充的'0'会对数据可视化有影响，因此这里建议使用原数据（即phone_data中的数据）进行可视化，可视化函数会自动忽略缺失值对可视化的影响
+#使用groupby方法统计每个品牌评论总数，放到pie_plt中，以此作为我们对销量的统计
+pie_plt = phone_data.groupby(['brand']).sum()['comments'].sort_values(ascending=False)
+
+——————————————————————————
+
+1.2 使用plt绘制扇形图展示销量统计结果
+#绘制各个手机品牌统计销量的占比扇形图，要求显示标题、品牌名称、占比值、颜色对应信息等
+fig,axes=plt.subplots(figsize=(12,12))
+#获取总销量数
+comment_sum=pie_plt.values.sum()
+#占比情况
+percen=[np.round(each/comment_sum*100,2) for each in pie_plt.values]
+#绘制占比扇形图
+axes.pie(pie_plt.values,labels=pie_plt.index,autopct="%3.1f%%")
+#设置浮标
+axes.legend([str(pie_plt.index[i])+":"+str(percen[i])+"%" for i in range(len(percen))],loc="upper left")
+axes.set_title("Proportion of mobile phone brand sales")
+plt.show()
+————————————————————————
+
+2.对决定手机价格的因素进行探索
+2.1 由于苹果手机和安卓手机在价格、配置等方面存在较大差异，而且苹果手机配置参数在我们的数据集中大多缺失，因此我们研究这个问题时，暂且只考虑安卓手机
+#设定不考虑苹果手机
+correlation=phone_data[(phone_data['brand']!='Apple')].corr()
+correlation
+#绘制相应correlation matrix的heatmap热力图
+plt.subplots(figsize=(8,8))
+sns.heatmap(correlation,vmin=-0.25,vmax=1,square=True,annot=True)
+axes.set_xticklabels(['RAM','ROM','battery','comments','price','rear camera','resolution','screen size','weight'
+])
+axes.set_yticklabels(['RAM','ROM','battery','comments','price','rear camera','resolution','screen size','weight'
+])
+bottom,top=axes.get_ylim()
+axes.set_ylim(bottom + 0.5,top - 0.5)
+axes.set_title('Explore the heat map of mobile phone sales factors')
+plt.show()
+————————————————————————————
+3.探索手机品牌对价格的影响
+3.1 对数据按照品牌进行分组，计算不同品牌价格中位数集合的标准差
+#对phone_data使用groupby().median().sort_values().values.std()计算不同品牌价格中位数集合的标准差
+phone_data.groupby(['brand']).median()['price'].sort_values(ascending=False).values.std()
+#绘制各个手机品牌价格中位数的柱形图，要求显示标题、横坐标、纵坐标等信息
+fig,axes=plt.subplots(figsize=(20,8))
+bar_plt=phone_data.groupby(['brand']).median()['price']
+axes.bar(bar_plt.index,bar_plt.values)
+axes.set_title('Brand and price')
+#计算不同屏幕材料价格中位数集合的标准差
+phone_data.groupby(['screen material']).median()['price'].sort_values(ascending=False).values
+#对phone_data使用groupby().median().sort_values()展示各种屏幕材料的手机的价格中位数
+phone_data.groupby(['screen material']).median()['price'].sort_values(ascending=False)
+#绘制柱形图展示各种屏幕材料的手机的价格中位数，要求显示标题、横坐标、纵坐标等信息
+fig,axes=plt.subplots(figsize=(18,8))
+bar_plt2=phone_data.groupby(['screen material']).median()['price']
+axes.bar(bar_plt2.index,bar_plt2.values)
+axes.set_title('The influence of different screen materials on mobile phone price')
+plt.show()
+
